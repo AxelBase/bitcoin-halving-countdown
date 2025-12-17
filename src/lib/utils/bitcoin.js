@@ -1,26 +1,58 @@
-// src/lib/utils/bitcoin.js (integrated fixed version)
+// src/lib/utils/bitcoin.js
 
 export const HALVING_INTERVAL = 210000;
 export const INITIAL_REWARD = 50;
-export const AVG_BLOCK_TIME_MS = 10 * 60 * 1000; // 10 minutes in milliseconds
+export const AVG_BLOCK_TIME_MS = 10 * 60 * 1000; // 10 minutes
 
-export const API_BLOCK_HEIGHT = 'https://mempool.space/api/blocks/tip/height';
-export const API_DIFFICULTY = 'https://mempool.space/api/v1/mining/hashrate/1d'; // Use chart for current as well
+export const API_BLOCK_HEIGHT =
+  'https://mempool.space/api/blocks/tip/height';
 
-// Hardcoded past halvings for reference (dates approximate). Update manually after new halvings.
+export const FALLBACK_HEIGHT = 928317;
+
+// ---------- Historical data ----------
+// Dates are historically accurate; rewards are exact.
 export const PAST_HALVINGS = [
-  { epoch: 0, block: 0, date: '2009-01-03', rewardBefore: null, rewardAfter: 50 },
-  { epoch: 1, block: 210000, date: '2012-11-28', rewardBefore: 50, rewardAfter: 25 },
-  { epoch: 2, block: 420000, date: '2016-07-09', rewardBefore: 25, rewardAfter: 12.5 },
-  { epoch: 3, block: 630000, date: '2020-05-11', rewardBefore: 12.5, rewardAfter: 6.25 },
-  { epoch: 4, block: 840000, date: '2024-04-19', rewardBefore: 6.25, rewardAfter: 3.125 }
-  // Future ones can be estimated. Next expected ~2028.
+  {
+    epoch: 0,
+    block: 0,
+    date: '2009-01-03',
+    rewardBefore: null,
+    rewardAfter: 50
+  },
+  {
+    epoch: 1,
+    block: 210000,
+    date: '2012-11-28',
+    rewardBefore: 50,
+    rewardAfter: 25
+  },
+  {
+    epoch: 2,
+    block: 420000,
+    date: '2016-07-09',
+    rewardBefore: 25,
+    rewardAfter: 12.5
+  },
+  {
+    epoch: 3,
+    block: 630000,
+    date: '2020-05-11',
+    rewardBefore: 12.5,
+    rewardAfter: 6.25
+  },
+  {
+    epoch: 4,
+    block: 840000,
+    date: '2024-04-19',
+    rewardBefore: 6.25,
+    rewardAfter: 3.125
+  }
 ];
 
-export const FALLBACK_HEIGHT = 928317; // Updated accurate as of Dec 17, 2025
-export const FALLBACK_DIFFICULTY = 148000000000000; // 148 T, approximate
+// ---------- Core helpers ----------
 
 export function getHalvingEpoch(height) {
+  if (!Number.isFinite(height) || height <= 0) return 0;
   return Math.floor(height / HALVING_INTERVAL);
 }
 
@@ -38,44 +70,44 @@ export function getNextHalvingBlock(height) {
   return (epoch + 1) * HALVING_INTERVAL;
 }
 
-export function estimateTimeToHalving(currentHeight) {
-  const nextBlock = getNextHalvingBlock(currentHeight);
-  const blocksLeft = nextBlock - currentHeight;
-  // Prevent negative time (future-proof and safe)
-  return Math.max(blocksLeft, 0) * AVG_BLOCK_TIME_MS;
+// ---------- Countdown helpers ----------
+
+export function estimateTimeToHalving(height) {
+  if (!Number.isFinite(height) || height <= 0) return 0;
+
+  const nextBlock = getNextHalvingBlock(height);
+  const blocksLeft = Math.max(nextBlock - height, 0);
+
+  return blocksLeft * AVG_BLOCK_TIME_MS;
 }
 
-export function getEstimatedNextHalvingDate(currentHeight) {
-  const timeToHalving = estimateTimeToHalving(currentHeight);
-  return new Date(Date.now() + timeToHalving);
+export function getEstimatedNextHalvingDate(height) {
+  const ms = estimateTimeToHalving(height);
+  if (!ms) return null;
+  return new Date(Date.now() + ms);
 }
 
-export function getProgressToHalving(currentHeight) {
-  const epoch = getHalvingEpoch(currentHeight);
+export function getProgressToHalving(height) {
+  if (!Number.isFinite(height) || height <= 0) return '0.00';
+
+  const epoch = getHalvingEpoch(height);
   const lastHalvingBlock = epoch * HALVING_INTERVAL;
-  const progress = ((currentHeight - lastHalvingBlock) / HALVING_INTERVAL) * 100;
-  return progress.toFixed(2);
+
+  const progress =
+    ((height - lastHalvingBlock) / HALVING_INTERVAL) * 100;
+
+  return Math.min(Math.max(progress, 0), 100).toFixed(2);
 }
+
+// ---------- API ----------
 
 export async function fetchBlockHeight() {
   try {
-    const response = await fetch(API_BLOCK_HEIGHT);
-    if (!response.ok) throw new Error('Network response was not ok');
-    return parseInt(await response.text(), 10);
-  } catch (error) {
-    console.error('Error fetching block height:', error);
+    const res = await fetch(API_BLOCK_HEIGHT);
+    if (!res.ok) throw new Error('Bad response');
+    return parseInt(await res.text(), 10);
+  } catch (err) {
+    console.error('Block height fetch failed:', err);
     return FALLBACK_HEIGHT;
-  }
-}
-
-export async function fetchDifficulty() {
-  try {
-    const response = await fetch(API_DIFFICULTY);
-    if (!response.ok) throw new Error('Network response was not ok');
-    const json = await response.json();
-    return json.currentDifficulty || parseFloat(await response.text());
-  } catch (error) {
-    console.error('Error fetching difficulty:', error);
-    return FALLBACK_DIFFICULTY;
   }
 }
