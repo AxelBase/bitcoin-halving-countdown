@@ -1,4 +1,4 @@
-// src/lib/utils/bitcoin.js
+// src/lib/utils/bitcoin.js (integrated fixed version)
 
 export const HALVING_INTERVAL = 210000;
 export const INITIAL_REWARD = 50;
@@ -17,7 +17,7 @@ export const PAST_HALVINGS = [
   // Future ones can be estimated. Next expected ~2028.
 ];
 
-export const FALLBACK_HEIGHT = 928000; // Approximate as of Dec 2025
+export const FALLBACK_HEIGHT = 928317; // Updated accurate as of Dec 17, 2025
 export const FALLBACK_DIFFICULTY = 148000000000000; // 148 T, approximate
 
 export function getHalvingEpoch(height) {
@@ -41,7 +41,8 @@ export function getNextHalvingBlock(height) {
 export function estimateTimeToHalving(currentHeight) {
   const nextBlock = getNextHalvingBlock(currentHeight);
   const blocksLeft = nextBlock - currentHeight;
-  return blocksLeft * AVG_BLOCK_TIME_MS;
+  // Prevent negative time (future-proof and safe)
+  return Math.max(blocksLeft, 0) * AVG_BLOCK_TIME_MS;
 }
 
 export function getEstimatedNextHalvingDate(currentHeight) {
