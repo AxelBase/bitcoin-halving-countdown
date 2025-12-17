@@ -1,0 +1,108 @@
+/* src/app.css */
+
+:root {
+  /* Light Mode - Pearl Gold Theme */
+  --primary-gold: #705335;
+  --primary-gold-hover: #8a6a4b;
+  --bg-color: #fcfaf7;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --text-main: #2c1e14;
+  --text-muted: #6d5d50;
+  --blob-1: #fceecb;
+  --blob-2: #e9dcc9;
+  --shadow: 0 8px 32px 0 rgba(112, 83, 53, 0.1);
+}
+
+[data-bs-theme="dark"] {
+  --bg-color: #1a1510;
+  --glass-bg: rgba(40, 32, 25, 0.7);
+  --glass-border: rgba(112, 83, 53, 0.2);
+  --text-main: #f5f0eb;
+  --text-muted: #b5a496;
+  --blob-1: #3d2e1f;
+  --blob-2: #2a1d12;
+  --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: 'Quicksand', sans-serif;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated Floating Background Blobs */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  width: 50vw;
+  height: 50vw;
+  border-radius: 50%;
+  z-index: -1;
+  filter: blur(100px);
+  opacity: 0.5;
+  animation: floatAround 25s infinite alternate ease-in-out;
+}
+
+body::before { background: var(--blob-1); top: -10%; left: -10%; }
+body::after { background: var(--blob-2); bottom: -10%; right: -10%; animation-delay: -5s; }
+
+@keyframes floatAround {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(100px, 50px) scale(1.2); }
+}
+
+/* Glassmorphism Classes */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+}
+
+.glass-card {
+  border-radius: 24px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.glass-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(112, 83, 53, 0.2);
+}
+
+/* Typography */
+.text-gold { color: var(--primary-gold) !important; }
+.text-muted { color: var(--text-muted) !important; }
+
+/* Buttons */
+.btn-gold {
+  background: var(--primary-gold);
+  color: white !important;
+  border-radius: 50px;
+  padding: 0.6rem 1.5rem;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+  background: var(--primary-gold-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(112, 83, 53, 0.3);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb {
+  background: var(--primary-gold);
+  border-radius: 10px;
+}
