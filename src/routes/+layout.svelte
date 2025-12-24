@@ -11,7 +11,7 @@
   }
 
   // --- Buy Me A Coffee Logic ---
-  const paypalUsername = 'AxelLab427';
+  const paypalUsername = '';
   const donationAmounts = [1, 3, 5, 10];
   let isDropdownOpen = false;
 

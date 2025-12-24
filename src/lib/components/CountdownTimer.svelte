@@ -2,12 +2,12 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
 
-  export let targetMs; // number OR Date (do not change API)
+  export let targetMs; // number | Date | undefined
 
   let now = Date.now();
   let interval;
 
-  // Normalize target reactively (THIS is the missing piece)
+  // Normalize safely (no gating)
   $: normalizedTarget =
     targetMs instanceof Date
       ? targetMs.getTime()
@@ -16,7 +16,7 @@
         : null;
 
   onMount(() => {
-    now = Date.now(); // force hydration sync
+    now = Date.now();
     interval = setInterval(() => {
       now = Date.now();
     }, 1000);
@@ -26,10 +26,10 @@
     if (interval) clearInterval(interval);
   });
 
-  // --- SAFE, REACTIVE COUNTDOWN ---
+  // NEVER block rendering
   $: timeLeft =
-    normalizedTarget && normalizedTarget > now
-      ? normalizedTarget - now
+    normalizedTarget
+      ? Math.max(normalizedTarget - now, 0)
       : 0;
 
   $: days = Math.floor(timeLeft / 86400000);
@@ -41,12 +41,8 @@
 <div class="card text-center">
   <div class="card-header">Time to Next Halving</div>
   <div class="card-body">
-    {#if normalizedTarget}
-      <h5 class="card-title">
-        {days} days {hours} hours {minutes} minutes {seconds} seconds
-      </h5>
-    {:else}
-      <h5 class="card-title text-muted">Calculating…</h5>
-    {/if}
+    <h5 class="card-title">
+      {days} days {hours} hours {minutes} minutes {seconds} seconds
+    </h5>
   </div>
 </div>
