@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://axelbase.github.io/bitcoin-halving-countdown/sitemap.xml
+Sitemap: https://bitcoin-halving-countdown.vercel.app/sitemap.xml
